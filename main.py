@@ -7,10 +7,10 @@ from classes import Byspec_Reader as BR
 from classes import Charge_Mono_Caller as CMC
 
 
-TestNL = 'Test molecule NL.txt'
-TestEL = 'Test molecule EL.txt'
-mass_table = 'masses_table.csv'
-mod_table = 'mods_table.csv'
+TestNL = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\Test molecule NL.txt"
+TestEL = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\Test molecule EL.txt"
+mass_table = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\masses_table.csv"
+mod_table = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\mods_table.csv"
 hf = hfunc.Helper_Funcs(TestNL,TestEL)
 nodes_from_file = hf.nodes_df()
 edges_from_file = hf.edges_df()
@@ -48,8 +48,8 @@ def autosearch(intact_ppm_tol:str = '10', frag_ppm:str = '20'):
     matched_output = []
 
 
-    NN_SIMPLE_CHARGE_WEIGHTS = r"C:\Users\ankur\Documents\GitHub\ms2_graph_tool\FOUR_APEX_OLD\Models\simple_weights.nn"
-    NN_MONO_WEIGHTS = r"C:\Users\ankur\Documents\GitHub\ms2_graph_tool\FOUR_APEX_OLD\Models/"
+    NN_SIMPLE_CHARGE_WEIGHTS = r"C:\Users\Hyperion\Documents\Code\FOUR_APEX_OLD\Models\simple_weights.nn"
+    NN_MONO_WEIGHTS = r"C:\Users\Hyperion\Documents\Code\FOUR_APEX_OLD\Models/"
     charge_mono_caller = CMC.Charge_Mono_Caller(NN_SIMPLE_CHARGE_WEIGHTS, NN_MONO_WEIGHTS)
     byspec_reader = BR.Byspec_Reader(data_file)
     scan_mz_charges = byspec_reader.get_scan_mz_charge()
@@ -67,7 +67,26 @@ def autosearch(intact_ppm_tol:str = '10', frag_ppm:str = '20'):
     molecule_momo_mass = molecule_library.monoisotopic_mass_calculator(molecules,molecule_IDs)
 
     for (mass,graph_ID) in molecule_momo_mass:
-        print(mass[0])
-        print(g)
+        scans_to_search = []
+        upper_mass_lim = mass[0] + calculate_ppm_tolerance(mass[0],i_ppm)
+        lower_mass_lim = mass[0] - calculate_ppm_tolerance(mass[0],i_ppm)
+
+        for scan_mz_charge_tuple in scan_mz_charges:
+            scan = byspec_reader.get_scan_by_scan_number(scan_mz_charge_tuple[0])
+            try:
+                caller_result = charge_mono_caller.process(scan, scan_mz_charge_tuple[1])
+                if caller_result['monoisotopic_mass'] > lower_limit:
+                    if caller_result['monoisotopic_mass'] < upper_limit:
+                        print('Valid scan added')
+                        scans_to_search.append(scan_mz_charge_tuple[0])
+
+            except:
+                print('-' * 20)
+                print('parent ion not found in scan')
+                print(scan_mz_charge_tuple[0])
+                print(scan_mz_charge_tuple[1])
+                print(scan_mz_charge_tuple[2])
+                print('#' * 20)
+
     
 autosearch()
