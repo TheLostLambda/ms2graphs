@@ -35,10 +35,13 @@ mod_dict = hf.generate_dict(dict_table_filepath=mod_table)
 
 # print(mzlist_graph)
 
-
+data_file = r"C:\Users\ankur\Documents\MS Data\OT_190122_APatel_Efaecalis_EnpA_10mAU.raw.byspec2"
 molecule_library = BG.Bio_Graph(nodes_from_file,edges_from_file,mass_dict,mod_dict)
 
-def autosearch():
+def calculate_ppm_tolerance(mass,ppm_tol):
+    return (mass*ppm_tol) / 1000000
+
+def autosearch(intact_ppm_tol:str = '10', frag_ppm:str = '20'):
     molecules = {}
     molecule_IDs = []
     frag_structure = []
@@ -48,9 +51,10 @@ def autosearch():
     NN_SIMPLE_CHARGE_WEIGHTS = r"C:\Users\ankur\Documents\GitHub\ms2_graph_tool\FOUR_APEX_OLD\Models\simple_weights.nn"
     NN_MONO_WEIGHTS = r"C:\Users\ankur\Documents\GitHub\ms2_graph_tool\FOUR_APEX_OLD\Models/"
     charge_mono_caller = CMC.Charge_Mono_Caller(NN_SIMPLE_CHARGE_WEIGHTS, NN_MONO_WEIGHTS)
-    # byspec_reader = BR.Byspec_Reader(data_file)
-    # scan_mz_charges = byspec_reader.get_scan_mz_charge()
-
+    byspec_reader = BR.Byspec_Reader(data_file)
+    scan_mz_charges = byspec_reader.get_scan_mz_charge()
+    i_ppm = dec.Decimal(intact_ppm_tol)
+    f_ppm = dec.Decimal(frag_ppm)
 
     master_graph = molecule_library.construct_graph()
 
@@ -62,6 +66,8 @@ def autosearch():
 
     molecule_momo_mass = molecule_library.monoisotopic_mass_calculator(molecules,molecule_IDs)
 
-    print(molecule_momo_mass)
+    for (mass,graph_ID) in molecule_momo_mass:
+        print(mass[0])
+        print(g)
     
 autosearch()
