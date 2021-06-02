@@ -5,10 +5,11 @@ import decimal as dec
 import networkx as nx
 from classes import Byspec_Reader as BR
 from classes import Charge_Mono_Caller as CMC
+import os
 
 
-TestNL = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\Test molecule NL.txt"
-TestEL = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\Test molecule EL.txt"
+TestNL = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\E faecalis monomer (AA Lat) NL.txt"
+TestEL = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\E faecalis monomer (AA Lat) EL.txt"
 mass_table = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\masses_table.csv"
 mod_table = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\mods_table.csv"
 hf = hfunc.Helper_Funcs(TestNL,TestEL)
@@ -22,26 +23,31 @@ mod_dict = hf.generate_dict(dict_table_filepath=mod_table)
 # test_graph = BG.Bio_Graph(nodes_from_file,edges_from_file,mass_dict,mod_dict)
 # mg1 = test_graph.construct_graph()
 # test_graph.draw_graph(mg1)
-
+#
 # output = test_graph.fragmentation(mg1,cut_limit=3)
-
+#
 # l1,l2,l3 = test_graph.sort_fragments(output)
-
+#
 # nlist = test_graph.monoisotopic_mass_calculator(graph_fragments=output,graph_IDs=l1)
 # clist = test_graph.monoisotopic_mass_calculator(graph_fragments=output,graph_IDs=l2)
 # ilist = test_graph.monoisotopic_mass_calculator(graph_fragments=output,graph_IDs=l3)
 # enabled = ['y']
 # mzlist_graph = test_graph.generate_mass_to_charge_masses(nlist,clist,ilist,enabled_ions=enabled,charge_limit=2)
-
+#
 # print(mzlist_graph)
+#
+data_file = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\OT_190122_APatel_Efaecalis_EnpA_10mAU.raw.byspec2"
+bio_graph = BG.Bio_Graph(nodes_from_file,edges_from_file,mass_dict,mod_dict)
 
-data_file = r"C:\Users\ankur\Documents\MS Data\OT_190122_APatel_Efaecalis_EnpA_10mAU.raw.byspec2"
-molecule_library = BG.Bio_Graph(nodes_from_file,edges_from_file,mass_dict,mod_dict)
 
 def calculate_ppm_tolerance(mass,ppm_tol):
     return (mass*ppm_tol) / 1000000
 
-def autosearch(intact_ppm_tol:str = '10', frag_ppm:str = '20'):
+def ppm_error(obs_mass,theo_mass):
+    return (1-(dec.Decimal(obs_mass)/theo_mass))*1000000
+
+def autosearch( selected_ions,user_set_cuts=1, intact_ppm_tol: str = '10', frag_ppm: str = '20' ):
+
     molecules = {}
     molecule_IDs = []
     frag_structure = []
@@ -56,37 +62,79 @@ def autosearch(intact_ppm_tol:str = '10', frag_ppm:str = '20'):
     i_ppm = dec.Decimal(intact_ppm_tol)
     f_ppm = dec.Decimal(frag_ppm)
 
-    master_graph = molecule_library.construct_graph()
+    master_graph = bio_graph.construct_graph()
 
     for components in nx.connected_components(master_graph):
-        molecule = nx.subgraph(master_graph,components)
-        molecule_hash = molecule_library.graph_hash(molecule)
+        molecule = nx.subgraph(master_graph, components)
+        molecule_hash = bio_graph.graph_hash(molecule)
         molecule_IDs.append(molecule_hash)
-        molecules.update({molecule_hash:molecule}) 
+        molecules.update({molecule_hash: molecule})
 
-    molecule_momo_mass = molecule_library.monoisotopic_mass_calculator(molecules,molecule_IDs)
+    molecule_momo_mass = bio_graph.monoisotopic_mass_calculator(molecules, molecule_IDs)
 
-    for (mass,graph_ID) in molecule_momo_mass:
+    for (mass, graph_ID) in molecule_momo_mass:
+        print(mass[0])
         scans_to_search = []
-        upper_mass_lim = mass[0] + calculate_ppm_tolerance(mass[0],i_ppm)
-        lower_mass_lim = mass[0] - calculate_ppm_tolerance(mass[0],i_ppm)
+        upper_mass_lim = mass[0] + calculate_ppm_tolerance(mass[0], i_ppm)
+        lower_mass_lim = mass[0] - calculate_ppm_tolerance(mass[0], i_ppm)
 
         for scan_mz_charge_tuple in scan_mz_charges:
             scan = byspec_reader.get_scan_by_scan_number(scan_mz_charge_tuple[0])
             try:
                 caller_result = charge_mono_caller.process(scan, scan_mz_charge_tuple[1])
-                if caller_result['monoisotopic_mass'] > lower_limit:
-                    if caller_result['monoisotopic_mass'] < upper_limit:
+                if caller_result['monoisotopic_mass'] > lower_mass_lim:
+                    if caller_result['monoisotopic_mass'] < upper_mass_lim:
                         print('Valid scan added')
                         scans_to_search.append(scan_mz_charge_tuple[0])
 
             except:
                 print('-' * 20)
                 print('parent ion not found in scan')
-                print(scan_mz_charge_tuple[0])
-                print(scan_mz_charge_tuple[1])
-                print(scan_mz_charge_tuple[2])
+                print('scan: ',  scan_mz_charge_tuple[0])
+                print('mz: ', scan_mz_charge_tuple[1])
+                print('charge: ', scan_mz_charge_tuple[2])
                 print('#' * 20)
 
-    
-autosearch()
+        if not scans_to_search:
+            print('scan_to_search is empty')
+
+        for scan_number in scans_to_search:
+            scan = byspec_reader.get_scan_by_scan_number(scan_number)
+            graph = nx.Graph(molecules[graph_ID])
+            fragments = bio_graph.fragmentation(graph)
+            n_frag, c_frag, i_frag = bio_graph.sort_fragments(fragments)
+            nlist = bio_graph.monoisotopic_mass_calculator(fragments,n_frag)
+            clist = bio_graph.monoisotopic_mass_calculator(fragments,c_frag)
+            ilist = bio_graph.monoisotopic_mass_calculator(fragments,i_frag)
+            frag_ions_df = bio_graph.generate_mass_to_charge_masses(nlist,clist,ilist,selected_ions,user_set_cuts)
+            for obs_mz,count in scan:
+                for row in frag_ions_df.values:
+                    ions = row[0]
+                    ion_type = row[1]
+                    graph_key = row[2]
+                    for idx,ion in enumerate(ions):
+                        upper_frag_lim = ion + calculate_ppm_tolerance(ion,f_ppm)
+                        lower_frag_lim = ion - calculate_ppm_tolerance(ion,f_ppm)
+                        if lower_frag_lim < obs_mz < upper_frag_lim:
+                            ppm_diff = ppm_error(obs_mz,ion)
+                            charge = idx + 1
+                            fragment = nx.Graph(fragments[graph_key])
+                            fragment_nodes = str(fragment.node)
+                            frag_structure.append(fragment_nodes)
+                            matched_output.append((obs_mz,ion,charge,count,ppm_diff,ion_type,frag_structure))
+                            frag_structure = []
+
+            matched_output_df = pd.DataFrame(matched_output,columns=['Observered Ion', 'Theoretical Ion', 'Charge','count','PPM Error', 'Ion Type','Structure'])
+            desired_width = 3840
+            pd.set_option('display.width', desired_width)
+            output_dir_path = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\Outputs"
+            output_folder = "/" + str(scan_number)
+            os.mkdir(output_dir_path + output_folder)
+            matched_output_df.to_csv(output_dir_path + output_folder + "/scan" + str(scan_number) + ".csv")
+
+            matched_output.clear()
+
+    return None
+
+enabled_ions = ['y', 'b']
+autosearch(selected_ions=enabled_ions,user_set_cuts=2)

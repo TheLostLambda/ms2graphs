@@ -290,7 +290,7 @@ class Bio_Graph:
         if 'y' in enabled_ions:
             for (mono_mass,graph) in c_terminal_fragments:
                 for charge_state in range(1, charge_limit+1):
-                    y_neutral = mono_mass[0] + C_term_neutral + hydrogen_mass
+                    y_neutral = mono_mass[0] + hydrogen_mass
                     y_mz.append((y_neutral+(proton_mass*charge_state))/charge_state)
                 mzlist_graph.append((y_mz,"y_ion",graph))
                 y_mz = []
@@ -314,7 +314,7 @@ class Bio_Graph:
         if 'a' in enabled_ions:
             for (mono_mass,graph) in n_terminal_fragments:
                 for charge_state in range(1, charge_limit+1):
-                    a_neutral = mono_mass[0] + C_term_neutral + hydrogen_mass
+                    a_neutral = mono_mass[0] + N_term_neutral + aldehyde_mass
                     a_mz.append((a_neutral+(proton_mass*charge_state))/charge_state)
                 mzlist_graph.append((a_mz,"a_ion",graph))
                 a_mz = []
@@ -322,7 +322,7 @@ class Bio_Graph:
         if 'b' in enabled_ions:
             for (mono_mass,graph) in n_terminal_fragments:
                 for charge_state in range(1, charge_limit+1):
-                    b_neutral = mono_mass[0] + C_term_neutral + hydrogen_mass
+                    b_neutral = mono_mass[0] + N_term_neutral - hydrogen_mass
                     b_mz.append((b_neutral+(proton_mass*charge_state))/charge_state)
                 mzlist_graph.append((b_mz,"b_ion",graph))
                 b_mz = []
@@ -330,10 +330,17 @@ class Bio_Graph:
         if 'c' in enabled_ions:
             for (mono_mass,graph) in n_terminal_fragments:
                 for charge_state in range(1, charge_limit+1):
-                    c_neutral = mono_mass[0] + C_term_neutral + hydrogen_mass
+                    c_neutral = mono_mass[0] + N_term_neutral + ammonia_mass
                     c_mz.append((c_neutral+(proton_mass*charge_state))/charge_state)
                 mzlist_graph.append((c_mz,"c_ion",graph))
                 c_mz = []
+
+        for (mono_mass, graph) in internal_fragments:
+            for charge_state in range(1, charge_limit + 1):
+                b_neutral = mono_mass[0] + N_term_neutral - hydrogen_mass
+                b_mz.append((b_neutral + (proton_mass * charge_state)) / charge_state)
+            mzlist_graph.append((b_mz, "i_ion", graph))
+            b_mz = []
 
         mzlist_graph_df = pd.DataFrame(mzlist_graph,columns=['mz','Ion_type','Graph_ID'])
         return mzlist_graph_df
