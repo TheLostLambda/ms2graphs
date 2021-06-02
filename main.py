@@ -46,7 +46,7 @@ def calculate_ppm_tolerance(mass,ppm_tol):
 def ppm_error(obs_mass,theo_mass):
     return (1-(dec.Decimal(obs_mass)/theo_mass))*1000000
 
-def autosearch( selected_ions,user_set_cuts=1, intact_ppm_tol: str = '10', frag_ppm: str = '20' ):
+def autosearch( selected_ions,user_set_cuts=1,user_set_charge=1, intact_ppm_tol: str = '10', frag_ppm: str = '20' ):
 
     molecules = {}
     molecule_IDs = []
@@ -101,12 +101,13 @@ def autosearch( selected_ions,user_set_cuts=1, intact_ppm_tol: str = '10', frag_
         for scan_number in scans_to_search:
             scan = byspec_reader.get_scan_by_scan_number(scan_number)
             graph = nx.Graph(molecules[graph_ID])
-            fragments = bio_graph.fragmentation(graph)
+            fragments = bio_graph.fragmentation(graph,cut_limit=user_set_cuts)
+            print(len(fragments))
             n_frag, c_frag, i_frag = bio_graph.sort_fragments(fragments)
             nlist = bio_graph.monoisotopic_mass_calculator(fragments,n_frag)
             clist = bio_graph.monoisotopic_mass_calculator(fragments,c_frag)
             ilist = bio_graph.monoisotopic_mass_calculator(fragments,i_frag)
-            frag_ions_df = bio_graph.generate_mass_to_charge_masses(nlist,clist,ilist,selected_ions,user_set_cuts)
+            frag_ions_df = bio_graph.generate_mass_to_charge_masses(nlist, clist, ilist, selected_ions,user_set_charge)
             for obs_mz,count in scan:
                 for row in frag_ions_df.values:
                     ions = row[0]
@@ -124,9 +125,10 @@ def autosearch( selected_ions,user_set_cuts=1, intact_ppm_tol: str = '10', frag_
                             matched_output.append((obs_mz,ion,charge,count,ppm_diff,ion_type,frag_structure))
                             frag_structure = []
 
-            matched_output_df = pd.DataFrame(matched_output,columns=['Observered Ion', 'Theoretical Ion', 'Charge','count','PPM Error', 'Ion Type','Structure'])
+            matched_output_df = pd.DataFrame(matched_output, columns=['Observered Ion', 'Theoretical Ion', 'Charge', 'count', 'PPM Error', 'Ion Type', 'Structure'])
             desired_width = 3840
             pd.set_option('display.width', desired_width)
+            print(matched_output_df)
             output_dir_path = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\Outputs"
             output_folder = "/" + str(scan_number)
             os.mkdir(output_dir_path + output_folder)
@@ -136,5 +138,5 @@ def autosearch( selected_ions,user_set_cuts=1, intact_ppm_tol: str = '10', frag_
 
     return None
 
-enabled_ions = ['y', 'b']
-autosearch(selected_ions=enabled_ions,user_set_cuts=2)
+enabled_ions = ['y', 'b','i']
+autosearch(selected_ions=enabled_ions,user_set_cuts=2,user_set_charge=2)

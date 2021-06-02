@@ -278,6 +278,7 @@ class Bio_Graph:
         y_mz = []
         x_mz = []
         z_mz = []
+        i_mz = []
 
         C_term_neutral = dec.Decimal('17.0027')
         N_term_neutral = dec.Decimal('1.0078')
@@ -335,12 +336,13 @@ class Bio_Graph:
                 mzlist_graph.append((c_mz,"c_ion",graph))
                 c_mz = []
 
-        for (mono_mass, graph) in internal_fragments:
-            for charge_state in range(1, charge_limit + 1):
-                b_neutral = mono_mass[0] + N_term_neutral - hydrogen_mass
-                b_mz.append((b_neutral + (proton_mass * charge_state)) / charge_state)
-            mzlist_graph.append((b_mz, "i_ion", graph))
-            b_mz = []
+        if 'i' in enabled_ions:
+            for (mono_mass, graph) in internal_fragments:
+                for charge_state in range(1, charge_limit + 1):
+                    i_neutral = mono_mass[0] + N_term_neutral - hydrogen_mass
+                    i_mz.append((i_neutral + (proton_mass * charge_state)) / charge_state)
+                mzlist_graph.append((i_mz, "i_ion", graph))
+                i_mz = []
 
         mzlist_graph_df = pd.DataFrame(mzlist_graph,columns=['mz','Ion_type','Graph_ID'])
         return mzlist_graph_df
