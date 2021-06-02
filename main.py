@@ -7,10 +7,10 @@ from classes import Byspec_Reader as BR
 from classes import Charge_Mono_Caller as CMC
 
 
-TestNL = R"C:\Users\Hyperion\Documents\GitHub\MS2_Tool\Test molecule NL.txt"
-TestEL = R"C:\Users\Hyperion\Documents\GitHub\MS2_Tool\Test molecule EL.txt"
-mass_table = R'C:\Users\Hyperion\Documents\GitHub\MS2_Tool\masses_table.csv'
-mod_table = R'C:\Users\Hyperion\Documents\GitHub\MS2_Tool\mods_table.csv'
+TestNL = 'Test molecule NL.txt'
+TestEL = 'Test molecule EL.txt'
+mass_table = 'masses_table.csv'
+mod_table = 'mods_table.csv'
 hf = hfunc.Helper_Funcs(TestNL,TestEL)
 nodes_from_file = hf.nodes_df()
 edges_from_file = hf.edges_df()
@@ -45,8 +45,8 @@ def autosearch():
     matched_output = []
 
 
-    NN_SIMPLE_CHARGE_WEIGHTS = R"C:\Users\Hyperion\Documents\GitHub\MS2_Tool\FOUR_APEX_OLD\Models\simple_weights.nn"
-    NN_MONO_WEIGHTS = R"FOUR_APEX_OLD\Models"
+    NN_SIMPLE_CHARGE_WEIGHTS = r"C:\Users\ankur\Documents\GitHub\ms2_graph_tool\FOUR_APEX_OLD\Models\simple_weights.nn"
+    NN_MONO_WEIGHTS = r"C:\Users\ankur\Documents\GitHub\ms2_graph_tool\FOUR_APEX_OLD\Models/"
     charge_mono_caller = CMC.Charge_Mono_Caller(NN_SIMPLE_CHARGE_WEIGHTS, NN_MONO_WEIGHTS)
     # byspec_reader = BR.Byspec_Reader(data_file)
     # scan_mz_charges = byspec_reader.get_scan_mz_charge()

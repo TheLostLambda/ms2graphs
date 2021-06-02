@@ -1,4 +1,4 @@
 node,molecule_ID,colour,mods
-GlcNAc1,GlcNAc,cyan,0
-MurNAc1,MurNAc_alditol,cyan,0
-Ala1,A,cyan,0
+GlcNAc1,GlcNAc,cyan,zero
+MurNAc1,MurNAc_alditol,cyan,zero
+Ala1,A,cyan,zero
