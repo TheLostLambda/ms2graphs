@@ -1,3 +1,9 @@
+# Running
+
+```bash
+python build_graphs.py data/monomers.csv tests/
+```
+
 # Developing
 
 ```bash
