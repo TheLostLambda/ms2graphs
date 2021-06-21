@@ -2,6 +2,7 @@ chain_abbr = {"G": "GlcNAc", "M": "MurNAc_alditol"}
 stem_abbr = {"J": "mDAP"}
 
 chain_residues = {"G", "M"}
+# Only need J and amino acids!
 stem_residues = {
     "A",
     "B",
