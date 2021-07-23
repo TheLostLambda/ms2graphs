@@ -1,0 +1,8 @@
+node1,node2,chain_colour_ID,linktype
+GlcNAc1,MurNAc1,violet,2
+MurNAc1,Ala1,violet,2
+Ala1,Gln1,violet,2
+Gln1,Lys1,violet,2
+Lys1,Ala2,violet,2
+Ala2,Ala3,violet,2
+
