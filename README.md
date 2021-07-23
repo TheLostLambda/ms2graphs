@@ -28,9 +28,20 @@ Na+ GM-AEJA-GM-AEJ (x2) (Anhydro) |2
 Na+ GM-AEJA-GM-AEJ (Anhydro) |2
 Na+ GM-AEJA-GM-AEJ|2
 GM-AEJA-GM-AEJ|2
+
+GM-AQK(AA)
+GM-AQKAA
+GM-AQK(A)A
+
+GM-AEJA=GM-AEJA
 ```
 
 # Questions
+
+- Wasn't the link type supposed to be switched from 2 to 3 on branching?
+- Related, does swapping node 1 and 2 effect the link type?
+- What to do about dimers linked by glycosidic *and* peptide bonds?
+- Are we interested at all in trimers and beyond?
 
 - What are the "mods" in the `masses.txt` file? Are they the numbers after the inferred structures in MS1?
 They are applied per-residue in the node list, marking how their masses differ from the canonical mass
@@ -60,3 +71,4 @@ MurNAc as normal, take away in mods section NegHOxy?
 They are mass corrections to the "canonical" residue weights. 5 means hydoxyl for the exposed C-terminus
 - Should I build to resolve the current format, or will it change an I should wait?
 Start with basic monomers
+- Bond direction is flipped on branching! linktype 2 -> 3
