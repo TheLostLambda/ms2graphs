@@ -39,9 +39,13 @@ GM-AEJA=GM-AEJA
 # Questions
 
 - Wasn't the link type supposed to be switched from 2 to 3 on branching?
+It was, but now bond direction is represented by swapping nodes 1 and 2
 - Related, does swapping node 1 and 2 effect the link type?
+Link type is being deprecated; swap nodes to show a change in bond direction
 - What to do about dimers linked by glycosidic *and* peptide bonds?
+Nothing to vital about implementing this now
 - Are we interested at all in trimers and beyond?
+Not particularly – most interesting diversity can be seem from a dimer
 
 - What are the "mods" in the `masses.txt` file? Are they the numbers after the inferred structures in MS1?
 They are applied per-residue in the node list, marking how their masses differ from the canonical mass

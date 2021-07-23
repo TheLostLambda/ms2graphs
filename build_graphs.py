@@ -40,17 +40,14 @@ class Node:
 
 
 class Edge:
-    def __init__(self, id_a, id_b, type):
+    def __init__(self, id_a, id_b, type=2):
         "Create an Edge from two Node IDs and a linktype"
         self.id_a = id_a
         self.id_b = id_b
         self.type = type
 
     def __repr__(self):
-        # Only accounting for types 2 and 3 right now, represented by arrows
-        # pointing in two different directions
-        bond = "->" if self.type == 2 else "<-"
-        return self.id_a + bond + self.id_b
+        return f"{self.id_a}->{self.id_b}"
 
 
 class Monomer:
@@ -99,24 +96,25 @@ class Monomer:
 
     def edges(self):
         # Generates unidirectional bonds for a linear portion of the molecule
-        def bond_segment(nodes, type):
+        def bond_segment(nodes):
             # Stop looping one node before the end of the segment
             span = range(0, len(nodes) - 1)
             # A 2-node sliding window is used to build edges
-            return [Edge(nodes[i].id, nodes[i + 1].id, type) for i in span]
+            return [Edge(nodes[i].id, nodes[i + 1].id) for i in span]
 
         # Flatten the `self.stem` nested list
         flat_stem = sum(self.stem, [])
         # Generate edges for the linear chain->stem segment
-        edges = bond_segment(self.chain + flat_stem, 2)
+        edges = bond_segment(self.chain + flat_stem)
         # Check if a lateral chain is present
         if self.lat:
             # If so, generate a segment using the lateral chain and the stem
             # node that it's connected to
             lat = [self.stem[0][-1], *self.lat]
+            lat.reverse()
             # Generate edges for that segment, but with bonds running in the
             # opposite direction
-            edges += bond_segment(lat, 3)
+            edges += bond_segment(lat)
         # Return the completed edge-list (with the structure name)
         return {self.structure: edges}
 
@@ -144,6 +142,8 @@ class Dimer:
             self.monomers = [Monomer(m) for m in monomers]
             # And oxidise / re-bond the MurNAc of the first monomer
             self.monomers[0].chain[-1].residue = "MurNAc"
+            self.monomers[0].chain[-1].mod = "negH"
+            self.monomers[1].chain[0].mod = "NegHOxy"
         else:
             # Otherwise, split into 3-3 and 3-4 bonded monomers
             self.monomers = {
@@ -190,11 +190,11 @@ class Dimer:
             edges_4 = Dimer.splice(self.monomers[4], "edges")
             # Add a 3-3 peptide bond
             mono_3a, mono_3b = self.monomers[3]
-            bond_33 = Edge(mono_3a.stem[0][2].id, mono_3b.stem[0][2].id, 2)
+            bond_33 = Edge(mono_3b.stem[0][2].id, mono_3a.stem[0][2].id, 2)
             edges_3.append(bond_33)
             # Add a 3-4 peptide bond
             mono_4a, mono_4b = self.monomers[4]
-            bond_34 = Edge(mono_4a.stem[0][2].id, mono_4b.stem[-1][-1].id, 2)
+            bond_34 = Edge(mono_4b.stem[0][2].id, mono_4a.stem[-1][-1].id, 2)
             edges_4.append(bond_34)
             # Return the named edge lists
             return {
