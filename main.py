@@ -7,11 +7,16 @@ from classes import Byspec_Reader as BR
 from classes import Charge_Mono_Caller as CMC
 import os
 
-
+# Change to relevant graph files and data
+data_file = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\OT_190122_APatel_Efaecalis_EnpA_10mAU.raw.byspec2"
 TestNL = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\E faecalis monomer (AA Lat) NL.txt"
 TestEL = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\E faecalis monomer (AA Lat) EL.txt"
+
+#Do not change
 mass_table = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\masses_table.csv"
 mod_table = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\mods_table.csv"
+
+
 hf = hfunc.Helper_Funcs(TestNL,TestEL)
 nodes_from_file = hf.nodes_df()
 edges_from_file = hf.edges_df()
@@ -36,7 +41,7 @@ mod_dict = hf.generate_dict(dict_table_filepath=mod_table)
 #
 # print(mzlist_graph)
 #
-data_file = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\OT_190122_APatel_Efaecalis_EnpA_10mAU.raw.byspec2"
+
 bio_graph = BG.Bio_Graph(nodes_from_file,edges_from_file,mass_dict,mod_dict)
 
 
@@ -64,6 +69,7 @@ def autosearch( selected_ions,user_set_cuts=1,user_set_charge=1, intact_ppm_tol:
 
     master_graph = bio_graph.construct_graph()
 
+
     for components in nx.connected_components(master_graph):
         molecule = nx.subgraph(master_graph, components)
         molecule_hash = bio_graph.graph_hash(molecule)
@@ -85,7 +91,7 @@ def autosearch( selected_ions,user_set_cuts=1,user_set_charge=1, intact_ppm_tol:
                 if caller_result['monoisotopic_mass'] > lower_mass_lim:
                     if caller_result['monoisotopic_mass'] < upper_mass_lim:
                         print('Valid scan added')
-                        scans_to_search.append(scan_mz_charge_tuple[0])
+                        scans_to_search.append(scan_mz_charge_tuple[3])
 
             except:
                 print('-' * 20)
@@ -95,6 +101,7 @@ def autosearch( selected_ions,user_set_cuts=1,user_set_charge=1, intact_ppm_tol:
                 print('charge: ', scan_mz_charge_tuple[2])
                 print('#' * 20)
 
+
         if not scans_to_search:
             print('scan_to_search is empty')
 
@@ -102,7 +109,7 @@ def autosearch( selected_ions,user_set_cuts=1,user_set_charge=1, intact_ppm_tol:
             scan = byspec_reader.get_scan_by_scan_number(scan_number)
             graph = nx.Graph(molecules[graph_ID])
             fragments = bio_graph.fragmentation(graph,cut_limit=user_set_cuts)
-            print(len(fragments))
+            total_theo_frags = len(fragments)
             n_frag, c_frag, i_frag = bio_graph.sort_fragments(fragments)
             nlist = bio_graph.monoisotopic_mass_calculator(fragments,n_frag)
             clist = bio_graph.monoisotopic_mass_calculator(fragments,c_frag)
@@ -120,7 +127,7 @@ def autosearch( selected_ions,user_set_cuts=1,user_set_charge=1, intact_ppm_tol:
                             ppm_diff = ppm_error(obs_mz,ion)
                             charge = idx + 1
                             fragment = nx.Graph(fragments[graph_key])
-                            fragment_nodes = str(fragment.node)
+                            fragment_nodes = str(fragment.nodes)
                             frag_structure.append(fragment_nodes)
                             matched_output.append((obs_mz,ion,charge,count,ppm_diff,ion_type,frag_structure))
                             frag_structure = []
@@ -129,14 +136,14 @@ def autosearch( selected_ions,user_set_cuts=1,user_set_charge=1, intact_ppm_tol:
             desired_width = 3840
             pd.set_option('display.width', desired_width)
             print(matched_output_df)
-            output_dir_path = r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\Outputs"
+            output_dir_path = r"C:\Users\Hyperion\Desktop\3 cuts"
             output_folder = "/" + str(scan_number)
             os.mkdir(output_dir_path + output_folder)
-            matched_output_df.to_csv(output_dir_path + output_folder + "/scan" + str(scan_number) + ".csv")
+            matched_output_df.to_csv(output_dir_path + output_folder + "/scan" + str(scan_number) +"total_theo_frags" + str(total_theo_frags) +  ".csv")
 
             matched_output.clear()
 
     return None
 
 enabled_ions = ['y', 'b','i']
-autosearch(selected_ions=enabled_ions,user_set_cuts=2,user_set_charge=2)
+autosearch(selected_ions=enabled_ions,user_set_cuts=3,user_set_charge=2,intact_ppm_tol=12)

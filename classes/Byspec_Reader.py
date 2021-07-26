@@ -40,7 +40,7 @@ class Byspec_Reader:
             #print(self.scans_details.dtypes)
 
             # print(self.scans_details.columns)
-            #print(self.scans_details[self.scans_details.MSLevel == 2])
+            # print(self.scans_details[self.scans_details.MSLevel == 2])
 
     def convert_binary_arrays_to_scan_points(self, peaks_mz, peak_intensity)->list:
 
@@ -87,15 +87,16 @@ class Byspec_Reader:
 
         for index, row in ms2_scans.iterrows():
             parent_scan_number = int(row['ParentScanNumber'])
+            ms2_scan = int(row['ScanNumber'])
             observedMz = dec.Decimal(row['ObservedMz'])
             charge_state = int(row['ChargeList'])
-            scan_mz_charge.append([parent_scan_number, observedMz, charge_state])
+            scan_mz_charge.append([parent_scan_number, observedMz, charge_state, ms2_scan])
 
 
         return(scan_mz_charge)
 
 #### Usage
-# byspec = Byspec_Reader(r"C:\Users\ankur\Documents\MS Data\OT_190122_APatel_Efaecalis_EnpA_10mAU.raw.byspec2")
+byspec = Byspec_Reader(r"C:\Users\Hyperion\Documents\GitHub\ms2_graph_tool\OT_190122_APatel_Efaecalis_EnpA_10mAU.raw.byspec2")
 # byspec.get_scan_mz_charge()
-# byspec.get_scan_by_scan_number(p)
+# byspec.get_scan_by_scan_number(668)
 # byspec.get_scan_by_observed_mz("471.713958740234")
