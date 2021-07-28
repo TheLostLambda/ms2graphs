@@ -133,17 +133,19 @@ def autosearch( selected_ions,user_set_cuts=1,user_set_charge=1, intact_ppm_tol:
                             frag_structure = []
 
             matched_output_df = pd.DataFrame(matched_output, columns=['Observered Ion', 'Theoretical Ion', 'Charge', 'count', 'PPM Error', 'Ion Type', 'Structure'])
+            matched_num = len(matched_output_df)
+            score = round(((matched_num/total_theo_frags)*100))
             desired_width = 3840
             pd.set_option('display.width', desired_width)
             print(matched_output_df)
-            output_dir_path = r"C:\Users\Hyperion\Desktop\3 cuts"
-            output_folder = "/" + str(scan_number)
+            output_dir_path = r"C:\Users\Hyperion\Desktop\Score test"
+            output_folder = "/" + str(scan_number) + ' Score ' + str(score)
             os.mkdir(output_dir_path + output_folder)
-            matched_output_df.to_csv(output_dir_path + output_folder + "/scan" + str(scan_number) +"total_theo_frags" + str(total_theo_frags) +  ".csv")
+            matched_output_df.to_csv(output_dir_path + output_folder + "/scan" + str(scan_number) +"score" + str(score) +  ".csv")
 
             matched_output.clear()
 
     return None
 
 enabled_ions = ['y', 'b','i']
-autosearch(selected_ions=enabled_ions,user_set_cuts=3,user_set_charge=2,intact_ppm_tol=12)
+autosearch(selected_ions=enabled_ions,user_set_cuts=3,user_set_charge=2,intact_ppm_tol=10)
