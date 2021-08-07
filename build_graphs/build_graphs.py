@@ -143,7 +143,7 @@ class Dimer:
             # And oxidise / re-bond the MurNAc of the first monomer
             self.monomers[0].chain[-1].residue = "MurNAc"
             self.monomers[0].chain[-1].mod = "negH"
-            self.monomers[1].chain[0].mod = "NegHOxy"
+            self.monomers[1].chain[0].mod = "negHOxy"
         else:
             # Otherwise, split into 3-3 and 3-4 bonded monomers
             self.monomers = {
@@ -154,7 +154,7 @@ class Dimer:
             self.monomers[3][0].stem[0][2].mod = "negH"
             self.monomers[4][0].stem[0][2].mod = "negH"
             # 3-3 bonds modify position 3 of the second monomer as well
-            self.monomers[3][1].stem[0][2].mod = "NegHOxy"
+            self.monomers[3][1].stem[0][2].mod = "negHOxy"
             # 3-4 bonds remove a mod from the second monomer stem terminus
             self.monomers[4][1].stem[-1][-1].mod = "zero"
 
@@ -223,15 +223,21 @@ def write_graphs(molecule, out_dir):
             el.writerows([[e.id_a, e.id_b, "violet", e.type] for e in edges])
 
 
+def load_structures(ms1_file):
+    # Load the MS1 structures from CSV
+    with open(ms1_file) as f:
+        rows = csv.reader(f)
+        ms1 = [r[0].split("|")[0] for r in rows][1:]
+    # Return generated graphs for every MS1 structure
+    return [Dimer(s) if Dimer.sep_re.search(s) else Monomer(s) for s in ms1]
+
+
 if __name__ == "__main__":
     # Extract the MS1 input filepath and graph output path from the arguments
     ms1_file = sys.argv[1]
     out_dir = sys.argv[2]
     # Load the MS1 structures from CSV
-    with open(ms1_file) as f:
-        rows = csv.reader(f)
-        ms1 = [r[0].split("|")[0] for r in rows][1:]
-    # Generate graphs for every MS1 structure
-    for s in ms1:
-        mol = Dimer(s) if Dimer.sep_re.search(s) else Monomer(s)
+    mols = load_structures(ms1_file)
+    # Write graphs for every MS1 structure
+    for mol in mols:
         write_graphs(mol, out_dir)
