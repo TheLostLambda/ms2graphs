@@ -230,7 +230,6 @@ class Bio_Graph:
             for g_id in cut_products[cut]:
                 graph = nx.Graph(cut_products[cut][g_id])
                 cut_products[cut+1].update(self.bond_cutter(graph))
-        print(cut_products)
         # Populates output dictonary with only unique graphs based on graph hashes
         for nth_product in cut_products:
             for graph_hash in nth_product:
