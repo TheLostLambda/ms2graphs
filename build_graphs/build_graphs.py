@@ -199,6 +199,8 @@ class Dimer:
             # Return the named edge lists
             return {
                 self.structure + " (3-3)": edges_3,
+                # FIXME: 3-4 bonds should only be generated for dimers where
+                # one of the constituent monomers actually has 4 stem residues
                 self.structure + " (3-4)": edges_4,
             }
 
