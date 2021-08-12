@@ -147,16 +147,16 @@ class Dimer:
         else:
             # Otherwise, split into 3-3 and 3-4 bonded monomers
             self.monomers = {
-                3: [Monomer(m) for m in monomers],
-                4: [Monomer(m) for m in monomers],
+                "3-3": [Monomer(m) for m in monomers],
+                "3-4": [Monomer(m) for m in monomers],
             }
             # Both result in a negH mod at position 3 of the first monomer
-            self.monomers[3][0].stem[0][2].mod = "negH"
-            self.monomers[4][0].stem[0][2].mod = "negH"
+            self.monomers["3-3"][0].stem[0][2].mod = "negH"
+            self.monomers["3-4"][0].stem[0][2].mod = "negH"
             # 3-3 bonds modify position 3 of the second monomer as well
-            self.monomers[3][1].stem[0][2].mod = "negHOxy"
+            self.monomers["3-3"][1].stem[0][2].mod = "negHOxy"
             # 3-4 bonds remove a mod from the second monomer stem terminus
-            self.monomers[4][1].stem[-1][-1].mod = "zero"
+            self.monomers["3-4"][1].stem[-1][-1].mod = "zero"
 
     def __repr__(self):
         return self.structure
@@ -170,8 +170,8 @@ class Dimer:
             # Otherwise, return two different node lists for 3-3 and 3-4 bonds
             key_leader = self.structure + " (3-"
             return {
-                key_leader + "3)": Dimer.splice(self.monomers[3], "nodes"),
-                key_leader + "4)": Dimer.splice(self.monomers[4], "nodes"),
+                key_leader + "3)": Dimer.splice(self.monomers["3-3"], "nodes"),
+                key_leader + "4)": Dimer.splice(self.monomers["3-4"], "nodes"),
             }
 
     def edges(self):
@@ -186,14 +186,14 @@ class Dimer:
             return {self.structure: edges}
         else:
             # Otherwise, create two different edge lists for 3-3 and 3-4 bonds
-            edges_3 = Dimer.splice(self.monomers[3], "edges")
-            edges_4 = Dimer.splice(self.monomers[4], "edges")
+            edges_3 = Dimer.splice(self.monomers["3-3"], "edges")
+            edges_4 = Dimer.splice(self.monomers["3-4"], "edges")
             # Add a 3-3 peptide bond
-            mono_3a, mono_3b = self.monomers[3]
+            mono_3a, mono_3b = self.monomers["3-3"]
             bond_33 = Edge(mono_3b.stem[0][2].id, mono_3a.stem[0][2].id, 2)
             edges_3.append(bond_33)
             # Add a 3-4 peptide bond
-            mono_4a, mono_4b = self.monomers[4]
+            mono_4a, mono_4b = self.monomers["3-4"]
             bond_34 = Edge(mono_4b.stem[0][2].id, mono_4a.stem[-1][-1].id, 2)
             edges_4.append(bond_34)
             # Return the named edge lists
